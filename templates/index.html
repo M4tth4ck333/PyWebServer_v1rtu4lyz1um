@@ -1,95 +1,243 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AR-XAI OpenWorld Dashboard</title>
+    <title>v1rtu4lyz1um - DOM2ORM + SystemT + zDLC Runtime</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; color: #e0e0e0; margin: 0; display: flex; flex-direction: column; align-items: center; }
-        header { width: 100%; background-color: #333; padding: 20px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
-        .container { width: 90%; max-width: 1200px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-        .card { background-color: #262626; border-radius: 8px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        h2 { color: #00adb5; border-bottom: 1px solid #444; padding-bottom: 10px; }
-        .stat { font-size: 1.2em; margin: 10px 0; }
-        .stat span { font-weight: bold; color: #ff5722; }
-        .btn { background-color: #00adb5; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; transition: background 0.3s; }
-        .btn:hover { background-color: #008c92; }
-        #log { font-family: monospace; font-size: 0.9em; height: 150px; overflow-y: scroll; background: #000; padding: 10px; border-radius: 4px; }
+        body { font-family: monospace; background: #0c0c0f; color: #00ffcc; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .pane { flex: 1; padding: 20px; border-right: 1px solid #222; display: flex; flex-direction: column; gap: 15px; overflow-y: auto; }
+        h2, h3 { margin: 0 0 5px 0; color: #ff0055; border-bottom: 1px solid #222; padding-bottom: 5px; }
+        textarea, input[type="text"] { width: 100%; background: #15151a; color: #fff; border: 1px solid #333; padding: 8px; font-family: monospace; box-sizing: border-box; }
+        button { background: #00ffcc; color: #000; border: none; padding: 10px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #00ccaa; }
+        pre { background: #111116; padding: 10px; border: 1px solid #222; font-size: 11px; max-height: 250px; overflow-y: auto; color: #00ffcc; margin: 0; }
+        .log-box { flex-grow: 1; }
+        .badge { display: inline-block; padding: 2px 6px; font-size: 10px; background: #222; color: #ff0055; border: 1px solid #ff0055; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-<header>
-    <h1>AR-XAI OpenWorld Dashboard</h1>
-</header>
+    <!-- LINKE SPALTE: UI & Intent Controller -->
+    <div class="pane">
+        <h2>1. HTML5 Shell & Interface</h2>
+        <div id="ui-container" style="border: 1px solid #333; padding: 15px; background: #111116;">
+            <!-- Dynamisches UI wird hier gerendert -->
+        </div>
 
-<div class="container">
-    <div class="card" id="player-status">
-        <h2>Player Status</h2>
-        <div class="stat">Level: <span id="lvl">1</span></div>
-        <div class="stat">XP: <span id="xp">0</span></div>
-        <div class="stat">Mode: <span id="mode">Riemannian Exploration</span></div>
+        <h3>3. SystemT Semantic Extractor & zDLC Input</h3>
+        <p style="font-size: 11px; color: #888; margin: 0;">Gib einen Befehl ein (z. B. <i>"Erstelle Panel Steuerung"</i> oder <i>"Füge Button Start hinzu"</i>):</p>
+        <input type="text" id="intent-input" placeholder="Intent eingeben...">
+        <button onclick="processUserIntent()">Intent ausführen (SystemT + zDLC)</button>
+
+        <h3>zDLC Governance & Policy Status</h3>
+        <pre id="policy-log">Warte auf Aktionen...</pre>
     </div>
 
-    <div class="card" id="plastic-stats">
-        <h2>Plastic Collection</h2>
-        <div class="stat">PET: <span id="pet">0g</span></div>
-        <div class="stat">Printer Status: <span id="printer">Idle</span></div>
-        <button class="btn" onclick="collectPlastic()">Simulate Collection</button>
+    <!-- RECHTE SPALTE: Objektmodell & State -->
+    <div class="pane" style="border-right: none;">
+        <h2>2. DOM2ORM Canonical Object Graph</h2>
+        <pre id="orm-json"></pre>
+
+        <h3 class="log-box">4. Event Bus & Runtime Log</h3>
+        <pre id="event-log" style="height: 200px;"></pre>
     </div>
 
-    <div class="card" id="manifold-view">
-        <h2>Riemannian Geometry</h2>
-        <div class="stat">Curvature: <span id="curvature">0.000</span></div>
-        <div class="stat">Topology: <span id="topology">Flat</span></div>
-        <button class="btn" onclick="exploreManifold()">Explore Manifold</button>
-    </div>
+    <script>
+        // ==========================================
+        // 1. zDLC POLICY & GOVERNANCE ENGINE
+        // ==========================================
+        const zdlcPolicies = {
+            policies: [
+                {
+                    id: "policy_require_id_type",
+                    action: "create",
+                    rules: [
+                        { field: "id", operator: "exists", error: "zDLC Violation: Node ID is mandatory." },
+                        { field: "type", operator: "in", allowed: ["app", "panel", "button", "log"], error: "zDLC Violation: Invalid node type in policy." }
+                    ]
+                }
+            ]
+        };
 
-    <div class="card" style="grid-column: 1 / -1;">
-        <h2>Event Log</h2>
-        <div id="log"></div>
-    </div>
-</div>
+        class ZdlcGovernanceEngine {
+            constructor(policies) {
+                this.policies = policies.policies;
+            }
 
-<script>
-    function addLog(msg) {
-        const log = document.getElementById('log');
-        const entry = document.createElement('div');
-        entry.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        log.prepend(entry);
-    }
-
-    async function collectPlastic() {
-        const amount = Math.floor(Math.random() * 100);
-        const res = await fetch('/api/collect', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type: 'PET', weight: amount })
-        });
-        const data = await res.json();
-
-        document.getElementById('pet').textContent = data.weight_processed + 'g';
-        addLog(`Collected ${data.weight_processed}g of PET plastic. Resource gain: ${data.resource_gain.toFixed(2)}.`);
-        if (data.printer_ready) {
-            document.getElementById('printer').textContent = 'Printing...';
-            addLog('3D Printer activated.');
-        } else {
-            document.getElementById('printer').textContent = 'Idle';
+            validate(actionType, nodeData) {
+                for (let policy of this.policies) {
+                    if (policy.action === actionType) {
+                        for (let rule of policy.rules) {
+                            if (rule.operator === "exists" && !nodeData[rule.field]) {
+                                return { allowed: false, error: rule.error, policyId: policy.id };
+                            }
+                            if (rule.operator === "in" && !rule.allowed.includes(nodeData[rule.field])) {
+                                return { allowed: false, error: rule.error, policyId: policy.id };
+                            }
+                        }
+                    }
+                }
+                return { allowed: true, error: null };
+            }
         }
-    }
 
-    async function exploreManifold() {
-        const res = await fetch('/api/explore', { method: 'POST' });
-        const data = await res.json();
+        const zdlcEngine = new ZdlcGovernanceEngine(zdlcPolicies);
 
-        document.getElementById('curvature').textContent = data.curvature.toFixed(4);
-        document.getElementById('topology').textContent = data.curvature > 0 ? 'Spherical' : (data.curvature < 0 ? 'Hyperbolic' : 'Flat');
-        addLog(`Explored manifold. Type: ${data.type}. Local curvature: ${data.curvature.toFixed(4)}.`);
-    }
+        // ==========================================
+        // 2. DOM2ORM OBJECT MODEL (Dict-First OOP)
+        // ==========================================
+        class Node {
+            constructor(nodeId, type, attrs = {}, state = {}) {
+                this.id = nodeId;
+                this.type = type;
+                this.attrs = attrs;
+                this.state = state;
+                this.children = [];
+                this.relations = [];
+            }
 
-    // Initial log
-    addLog('System online. Ready for exploration.');
-</script>
+            // Mapping-Semantik (__iter__)
+            *[Symbol.iterator]() {
+                yield* Object.entries({
+                    id: this.id,
+                    type: this.type,
+                    attrs: this.attrs,
+                    state: this.state,
+                    children: this.children.map(c => c.id)
+                });
+            }
 
+            toDict() {
+                return {
+                    id: this.id,
+                    type: this.type,
+                    attrs: this.attrs,
+                    state: this.state,
+                    children: this.children.map(c => c.toDict()),
+                    relations: this.relations
+                };
+            }
+        }
+
+        // Globaler Initial-State
+        const rootNode = new Node("app_root", "app", { title: "Universal Emulator" }, { locked: false });
+        const initialPanel = new Node("main_panel", "panel", { title: "Dashboard" }, { visible: true });
+        rootNode.children.push(initialPanel);
+
+        // ==========================================
+        // 3. SYSTEMT SEMANTIC EXTRACTOR (NLP Mocker)
+        // ==========================================
+        function systemTExtractIntent(text) {
+            text = text.toLowerCase();
+            if (text.includes("button")) {
+                let nameMatch = text.split(" ").pop();
+                return {
+                    action: "create",
+                    node: {
+                        id: "btn_" + Math.random().toString(36).substr(2, 5),
+                        type: "button",
+                        attrs: { title: nameMatch.toUpperCase() },
+                        state: { enabled: true }
+                    }
+                };
+            } else if (text.includes("panel")) {
+                return {
+                    action: "create",
+                    node: {
+                        id: "panel_" + Math.random().toString(36).substr(2, 5),
+                        type: "panel",
+                        attrs: { title: "Neues Panel" },
+                        state: { visible: true }
+                    }
+                };
+            }
+            return { action: "unknown", error: "SystemT konnte keinen Intent extrahieren." };
+        }
+
+        // ==========================================
+        // 4. RUNTIME & UI RENDERER
+        // ==========================================
+        function logEvent(msg, type = "INFO") {
+            const logEl = document.getElementById("event-log");
+            logEl.textContent += `[${new Date().toLocaleTimeString()}] [${type}] ${msg}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function renderDOM2ORM() {
+            // State in JSON Ansicht schreiben
+            document.getElementById("orm-json").textContent = JSON.stringify(rootNode.toDict(), null, 2);
+
+            // HTML5 UI Shell aus dem Objektgraphen rendern
+            const container = document.getElementById("ui-container");
+            container.innerHTML = `<div class="badge">Root: ${rootNode.id}</div>`;
+
+            function renderNodeRecursive(node, parentEl) {
+                let el = document.createElement("div");
+                el.style.border = "1px solid #333";
+                el.style.margin = "8px 0";
+                el.style.padding = "8px";
+                el.style.background = "#1a1a22";
+
+                if (node.type === "panel") {
+                    el.innerHTML = `<strong>[Panel] ${node.attrs.title || node.id}</strong>`;
+                } else if (node.type === "button") {
+                    let btn = document.createElement("button");
+                    btn.textContent = node.attrs.title || "Button";
+                    btn.onclick = () => logEvent(`Button '${node.id}' geklickt.`, "ACTION");
+                    el.appendChild(btn);
+                } else {
+                    el.innerHTML = `[${node.type}] ${node.id}`;
+                }
+
+                node.children.forEach(child => renderNodeRecursive(child, el));
+                parentEl.appendChild(el);
+            }
+
+            rootNode.children.forEach(child => renderNodeRecursive(child, container));
+        }
+
+        function processUserIntent() {
+            const prompt = document.getElementById("intent-input").value;
+            if (!prompt) return;
+
+            logEvent(`Roher Intent empfangen: "${prompt}"`, "SYSTEMT");
+
+            // 1. SystemT Extraktion
+            const extracted = systemTExtractIntent(prompt);
+            if (extracted.error) {
+                logEvent(extracted.error, "ERROR");
+                document.getElementById("policy-log").textContent = extracted.error;
+                return;
+            }
+
+            logEvent(`SystemT extrahiert: Action=${extracted.action}, Type=${extracted.node.type}, ID=${extracted.node.id}`, "SUCCESS");
+
+            // 2. zDLC Policy Validation
+            const validation = zdlcEngine.validate(extracted.action, extracted.node);
+            if (!validation.allowed) {
+                logEvent(`zDLC Blocked: ${validation.error} (Policy: ${validation.policyId})`, "ERROR");
+                document.getElementById("policy-log").textContent = `BLOCKIERT: ${validation.error}`;
+                return;
+            }
+
+            logEvent(`zDLC Policy Check bestanden (${validation.policyId}). Mutation erlaubt.`, "GOVERNANCE");
+            document.getElementById("policy-log").textContent = `Status: OK (Freigegeben durch zDLC)`;
+
+            // 3. Mutation auf den DOM2ORM Graphen anwenden
+            const newNode = new Node(extracted.node.id, extracted.node.type, extracted.node.attrs, extracted.node.state);
+            initialPanel.children.push(newNode);
+
+            // 4. UI reaktiv aktualisieren
+            renderDOM2ORM();
+            document.getElementById("intent-input").value = "";
+            logEvent(`Node ${newNode.id} erfolgreich in den DOM2ORM-Graphen injiziert.`, "RENDER");
+        }
+
+        // Init beim Laden
+        window.onload = () => {
+            logEvent("Browser-Runtime initialisiert.", "INIT");
+            renderDOM2ORM();
+        };
+    </script>
 </body>
 </html>
