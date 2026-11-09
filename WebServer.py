@@ -1,4 +1,49 @@
-# Import socket module
+import threading
+import json
+from cheroot import wsgi
+from pyboy import PyBoy
+
+class IPyPyCherootServer:
+    def __init__(self, rom_path: str, host: str = "127.0.0.1", port: int = 8080):
+        self.host = host
+        self.port = port
+        self.pyboy = PyBoy(rom_path, window="null")
+        self.server = None
+        self.thread = None
+
+    def wsgi_app(self, environ, start_response):
+        path = environ.get('PATH_INFO', '')
+        
+        if path == '/api/status':
+            self.pyboy.tick()
+            data = {
+                "status": "running",
+                "engine": "ipypy3 + cheroot",
+                "cartridge": self.pyboy.cartridge_title
+            }
+            body = json.dumps(data).encode('utf-8')
+            start_response('200 OK', [('Content-Type', 'application/json'), ('Access-Control-Allow-Origin', '*')])
+            return [body]
+            
+        start_response('404 Not Found', [('Content-Type', 'text/plain')])
+        return [b'Not Found']
+
+    def start_background(self):
+        """Startet den Cheroot-Server in einem eigenständigen Daemon-Thread"""
+        self.server = wsgi.Server((self.host, self.port), self.wsgi_app)
+        self.thread = threading.Thread(target=self.server.start, daemon=True)
+        self.thread.start()
+        print(f"[ipypy3] Cheroot Server aktiv auf http://{self.host}:{self.port}")
+
+    def stop(self):
+        if self.server:
+            self.server.stop()
+            self.pyboy.stop()
+            print("[ipypy3] Cheroot Server gestoppt.")
+
+# Verwendung direkt im Notebook:
+# server_node = IPyPyCherootServer("game.gb")
+# server_node.start_background()# Import socket module
 import socket
 import datetime
 import os
