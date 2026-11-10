@@ -1,12 +1,14 @@
----
-layout: page
-title: FAQ
-parent: Community 
-grand_parent: In depth rule-based modeling techniques
-nav_order: 1
-description: SystemT FAQs
----
-
+#### patched over 
+##### https://github.com/M4tth4ck333/ramble
+      ---
+      layout: page
+      title: FAQ
+      parent: Community 
+      grand_parent: In depth rule-based modeling techniques
+      nav_order: 1
+      description: SystemT FAQs
+      ---
+      
 # FAQ
 
 ## General
