@@ -129,3 +129,127 @@ if __name__ == "__main__":
         cherrypy.quickstart(V1rtu4lyz1umServer(), '/', conf)
     finally:
         emulator_bridge.stop()
+import cherrypy
+import json
+import datetime
+from collections.abc import MutableMapping
+
+# --- 1. Dunder-Overlay & JSONPath ORM (SystemT Core) ---
+class NodeGraphNode(MutableMapping):
+    """Dynamisches Dunder-Overlay für JSONPath-Traversierung und ORM-Mappings."""
+    def __init__(self, node_id: str, data: dict = None):
+        self.id = node_id
+        self._data = data if data is not None else {}
+
+    def __getitem__(self, key):
+        if str(key).startswith("$"):
+            return self._resolve_path(str(key))
+        return self._data[key]
+
+    def __setitem__(self, key, value):
+        if str(key).startswith("$"):
+            self._mutate_path(str(key), value)
+        else:
+            self._data[key] = value
+
+    def __delitem__(self, key):
+        del self._data[key]
+
+    def __iter__(self):
+        return iter(self._data)
+
+    def __len__(self):
+        return len(self._data)
+
+    def _resolve_path(self, path: str):
+        if path == "$":
+            return self._data
+        clean_path = path[2:] if path.startswith("$.") else path[1:]
+        current = self._data
+        for part in clean_path.split("."):
+            if not part:
+                continue
+            if "[" in part and part.endswith("]"):
+                key, idx_str = part[:-1].split("[")
+                current = current.get(key, [])[int(idx_str)]
+            else:
+                current = current[part]
+        return current
+
+    def _mutate_path(self, path: str, value):
+        clean_path = path[2:] if path.startswith("$.") else path[1:]
+        parts = clean_path.split(".")
+        curr = self._data
+        for part in parts[:-1]:
+            curr = curr.setdefault(part, {})
+        curr[parts[-1]] = value
+
+# --- 2. PyPy Lambda Runtime & z/DLC Kernel ---
+class PyPyLambdaRuntime:
+    """Führt Low-Level z/DLC Operationen und Lambda-Payloads aus."""
+    @staticmethod
+    def execute(payload: dict) -> dict:
+        action = payload.get("action", "noop")
+        target_path = payload.get("path", "$")
+        node = NodeGraphNode("runtime_node", payload.get("state", {}))
+        
+        result = {"status": "executed", "engine": "pypy3lambda-z/DLC"}
+        if action == "query":
+            result["data"] = node[target_path]
+        elif action == "mutate":
+            node[target_path] = payload.get("value")
+            result["state"] = node._data
+        return result
+
+# --- 3. MetaKernel Gateway (MCP2ORM2DOM2ipynb2REST) ---
+class MetaKernelGateway:
+    """Das zentrale Gateway, das MCP, ORM, DOM, Jupyter/ipynb und REST vereint."""
+    def __init__(self):
+        self.store = NodeGraphNode("gateway_root", {
+            "mcp": {"protocol_version": "2.0", "channels": ["z/DLC", "websocket"]},
+            "orm": {"tables": ["scans", "nodes", "discoveries"]},
+            "dom": {"root_element": "AppRoot", "nodes_count": 42},
+            "ipynb": {"kernel": "ipython_metakernel_v3", "active": True}
+        })
+
+    def handle_rest_request(self, endpoint: str, data: dict = None) -> dict:
+        if endpoint == "status":
+            return {
+                "gateway": "metakernel_as_a_MCP2ORM2DOM2ipynb2REST",
+                "timestamp": datetime.datetime.now().isoformat(),
+                "store": self.store._data
+            }
+        elif endpoint == "mcp_sync":
+            return PyPyLambdaRuntime.execute(data or {})
+        return {"error": "Unknown endpoint"}
+
+# --- 4. CherryPy z/DLC Web Server ---
+gateway = MetaKernelGateway()
+
+class SystemTZDLCWebService:
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def index(self):
+        return {
+            "system": "SystemTUV",
+            "runtime": "z/DLC CherryPy",
+            "domain": "v1rtu4lyz1um.com",
+            "gateways": ["MCP", "ORM", "DOM", "ipynb", "REST"]
+        }
+
+    @cherrypy.expose
+    @cherrypy.tools.json_in()
+    @cherrypy.tools.json_out()
+    def api(self, action="status"):
+        data = cherrypy.request.json if cherrypy.request.method == 'POST' else None
+        return gateway.handle_rest_request(action, data)
+
+if __name__ == '__main__':
+    conf = {
+        '/': {
+            'tools.sessions.on': True,
+            'tools.response_headers.on': True,
+            'tools.response_headers.headers': [('Access-Control-Allow-Origin', '*')]
+        }
+    }
+    cherrypy.quickstart(SystemTZDLCWebService(), '/', conf)
